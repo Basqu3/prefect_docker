@@ -1,0 +1,22 @@
+version: '3.12'
+services:
+  prefect-server:
+    image: prefecthq/prefect:3.4.8.dev7-python3.11-conda
+    command: prefect server start --host 0.0.0.0
+    ports:
+      - "4200:4200"
+    environment:
+      - PREFECT_UI_URL=http://localhost:4200/api
+      - PREFECT_API_URL=http://localhost:4200/api
+      - PREFECT_SERVER_API_HOST=0.0.0.0
+    volumes:
+      - prefect-data:/root/.prefect
+    networks:
+      - prefect-network
+
+volumes:
+  prefect-data:
+
+networks:
+  prefect-network:
+    driver: bridge

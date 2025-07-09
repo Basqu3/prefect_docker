@@ -1,0 +1,41 @@
+version: '3.12'
+
+services:
+  prefect-server:
+    image: prefecthq/prefect:3.4.8.dev7-python3.11-conda
+    command: prefect server start --host 0.0.0.0
+    ports:
+      - "4200:4200"
+    environment:
+      - PREFECT_UI_URL=http://localhost:4200/api
+      - PREFECT_API_URL=http://localhost:4200/api
+      - PREFECT_SERVER_API_HOST=0.0.0.0
+    volumes:
+      - prefect-data:/root/.prefect
+    networks:
+      - prefect-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4200/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  prefect-worker:
+    build: ./flows
+    environment:
+      - PREFECT_API_URL=http://prefect-server:4200/api
+    depends_on:
+      prefect-server:
+        condition: service_healthy
+    networks:
+      - prefect-network
+    volumes:
+      - ./flows:/app/flows
+    command: prefect worker start --pool default-pool --type process
+
+volumes:
+  prefect-data:
+
+networks:
+  prefect-network:
+    driver: bridge

@@ -1,0 +1,4 @@
+prefect>=2.0.0
+requests
+pandas
+# Add other dependencies your flows need
